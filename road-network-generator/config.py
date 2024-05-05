@@ -11,8 +11,8 @@ STREET_COST = 4
 
 EDGE_COLORS = {
     HIGHWAY_COST: 'black', 
-    MAIN_ROAD_COST: 'green', 
-    MINOR_ROAD_COST: 'yellow', 
+    MAIN_ROAD_COST: '#164018', 
+    MINOR_ROAD_COST: '#26752a', 
     RURAL_ROAD_COST: 'orange', 
     SLOW_ROAD_COST: "#ffcccb",
     STREET_COST: "lightgrey"
@@ -27,3 +27,4 @@ EDGE_SIZES = {HIGHWAY_COST: 5,
 
 
 STANDARD_SIZE = 10
+ROAD_CURVATURE = 3
