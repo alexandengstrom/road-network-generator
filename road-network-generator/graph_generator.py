@@ -33,30 +33,41 @@ class RoadNetwork:
 
         self.create_highway_system(size)
         print("Generated layer 1")
-        self.create_city_suburbs(suburbs_size, size)
+        
         print("Generated suburbs")
 
         if size > 5:
             self.connect_point_to_nearest_larger_point(self.layer1 + self.highway_points, self.layer2, MAIN_ROAD_COST, 20, 10)
             self.connect_with_closest_points(self.layer2, MAIN_ROAD_COST)
+            self.generate_streets(self.layer2, 30, 10)
             self.create_clusters(self.layer2, 3, MINOR_ROAD_COST, 1)
             print("Generated layer 2")
 
-        if size > 10:
-            self.connect_point_to_nearest_larger_point(self.layer1 + self.layer2 + self.highway_points, self.layer3, MINOR_ROAD_COST, 10, 5)
-            self.create_clusters(self.layer3, 3, RURAL_ROAD_COST, 1)
-            print("Generated layer 3")
+        if not size > 10:
+            self.layer3 = self.layer3[:len(self.layer3) // (size // 2)]
 
-        if size > 15:
-            self.connect_point_to_nearest_larger_point(self.layer1 + self.layer2 + self.layer3 + self.highway_points, self.layer4, RURAL_ROAD_COST)
-            self.create_clusters(self.layer3, 3, SLOW_ROAD_COST, 1)
-            print("Generated layer 4")
+        self.connect_point_to_nearest_larger_point(self.layer1 + self.layer2 + self.highway_points, self.layer3, MINOR_ROAD_COST, 10, 5)
+        self.create_clusters(self.layer3, 6, RURAL_ROAD_COST, 1)
+        self.generate_streets(self.layer3, 20, 8)
+        print("Generated layer 3")
+        
+        if not size > 15:
+            self.layer4 = self.layer4[:len(self.layer4) // (size // 2)]
 
-        if size > 20:
-            self.connect_point_to_nearest_larger_point(self.layer3 + self.layer4, self.layer5, SLOW_ROAD_COST)
-            print("Generated layer 5")
+        self.connect_point_to_nearest_larger_point(self.layer1 + self.layer2 + self.layer3 + self.highway_points, self.layer4, RURAL_ROAD_COST)
+        self.create_clusters(self.layer4, 3, SLOW_ROAD_COST, 1)
+        self.generate_streets(self.layer4, 20, 5)
+        print("Generated layer 4")
 
-        self.add_random_connections(self.layer1 + self.layer2 + self.layer3, MAIN_ROAD_COST, size, 20)
+        tmp = self.layer5
+        if not size > 20:
+            self.layer5 = self.layer5[:len(self.layer5) // (size // 2)]
+
+        self.connect_point_to_nearest_larger_point(self.layer3 + self.layer4, self.layer5, SLOW_ROAD_COST)
+        print("Generated layer 5")
+
+        self.create_city_suburbs(suburbs_size, size)
+        #self.add_random_connections(self.layer1 + self.layer2 + self.layer3, MAIN_ROAD_COST, size, 20)
 
         if size > 15:
             self.add_random_connections(self.layer3 + self.layer4, MINOR_ROAD_COST, 20)
@@ -69,7 +80,7 @@ class RoadNetwork:
 
         print("Generated random connections")
         
-        self.make_connected(self.layer1 + self.layer2 + self.layer3 + self.layer4 + self.layer5, RURAL_ROAD_COST)
+        #self.make_connected(self.layer1 + self.layer2 + self.layer3 + self.layer4 + self.layer5, RURAL_ROAD_COST)
         before = self.G.number_of_edges()
         while self.remove_redundant_nodes():
             pass
@@ -113,11 +124,30 @@ class RoadNetwork:
         
         self.make_connected(self.layer1, HIGHWAY_COST)
 
+    def generate_streets(self, points, radius, num):
+        for point in points:
+            local_points = []
+            for _ in range(num):
+                new_x = random.randint(max((0, point[0] - radius)), min((point[0] + radius, self.width - 1)))
+                new_y = random.randint(max((0, point[1] - radius)), min((point[1] + radius, self.height - 1)))
+                n_point = (new_x, new_y)
+                way_points = self.connect(point, n_point, STREET_COST)
+                for w_point in way_points:
+                    for _ in range(num // 2):
+                        w_new_x = random.randint(max((0, w_point[0] - radius//2)), min((w_point[0] + radius//2, self.width - 1)))
+                        w_new_y = random.randint(max((0, w_point[1] - radius//2)), min((w_point[1] + radius//2, self.height - 1)))
+                        w_n_point = (w_new_x, w_new_y)
+                        way_points2 = self.connect(point, n_point, STREET_COST)
+
+
     def create_city_suburbs(self, size, graph_size):
         city_size = random.randint(1, 3)
-        suburbs = self.create_clusters(self.layer1, size, MAIN_ROAD_COST, size // city_size)
+        self.generate_streets(self.layer1, 50, 20)
+        suburbs = self.create_clusters(self.layer1, size, MAIN_ROAD_COST, size // (city_size * 2))
+        self.generate_streets(suburbs, 20, 7)
         villages = self.create_clusters(suburbs, size, RURAL_ROAD_COST, size//2)
-        self.create_clusters(villages, 5, STREET_COST, size//2)
+        #self.create_clusters(villages, 5, STREET_COST, size//2)
+        self.generate_streets(villages, 15, 7)
 
     def create_clusters(self, cities, num_suburbs, cost, spread):
         suburbs = []
@@ -530,5 +560,5 @@ class RoadNetwork:
 
 
 graph1 = RoadNetwork()
-graph1.generate(seed=349, size=21, camery_density=15, gas_station_density=5, suburbs_size=5)
-graph1.plot(show_cameras=True, show_gas_stations=False)
+graph1.generate(seed=667, size=21, camery_density=15, gas_station_density=5, suburbs_size=5)
+graph1.plot(show_cameras=False, show_gas_stations=False)
