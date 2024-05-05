@@ -18,12 +18,12 @@ EDGE_COLORS = {
     STREET_COST: "lightgrey"
     }
 
-EDGE_SIZES = {HIGHWAY_COST: 8, 
-              MAIN_ROAD_COST: 3, 
-              MINOR_ROAD_COST: 2, 
-              RURAL_ROAD_COST: 1, 
-              SLOW_ROAD_COST: 1,
-              STREET_COST: 1}
+EDGE_SIZES = {HIGHWAY_COST: 5, 
+              MAIN_ROAD_COST: 2, 
+              MINOR_ROAD_COST: 1, 
+              RURAL_ROAD_COST: 0.9, 
+              SLOW_ROAD_COST: 0.8,
+              STREET_COST: 0.7}
 
 
 STANDARD_SIZE = 10
