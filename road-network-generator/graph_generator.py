@@ -41,7 +41,7 @@ class RoadNetwork:
         #self.layer1 = [(random.randint(0, self.width - 1), random.randint(0, self.height - 1)) for _ in range(size)]
 
     def create_city_objects(self, Type, size, map_size):
-        points = []
+        points = list()
 
         for _ in range(size):
             x = random.randint(0, self.width - 1)
@@ -50,7 +50,7 @@ class RoadNetwork:
             point = Type(pos, self, map_size)
             points.append(point)
             self.poi[point.pos] = Type
-            self.add_points_of_interest(point.poi)
+            self.add_points_of_interest(point.get_points_of_interest())
 
             city_connections[pos] = dict()
             city_connections[pos][pos] = True
@@ -59,10 +59,29 @@ class RoadNetwork:
     
     def get_coordinates(self, points):
         return list(map(lambda city: city.pos, points))
+    
+    def decide_number_of_cities(self, size):
+        metropolitans = 0
+        urban_areas = 0
 
+        if size > 10:
+            metropolitans = size
+            urban_areas = size * 2
+        elif size > 5:
+            metropolitans = 5
+            urban_areas = 3
+        elif size > 2:
+            metropolitans = 4
+            urban_areas = 8
+        elif size > 1:
+            metropolitans = 3
+            urban_areas = 7
+        else:
+            metropolitans = 5
+
+        return metropolitans, urban_areas
+            
     def generate(self, size=STANDARD_SIZE, seed=0, camery_density=5, gas_station_density=5, suburbs_size=5):
-        CPU_CPUNT = os.cpu_count()
-
         start_time = time.time()
 
         if seed:
@@ -71,18 +90,19 @@ class RoadNetwork:
         self.camera_density = camery_density
         self.gas_station_density = gas_station_density
         
-        #self.create_layers(size)
+        num_metropolitans, num_urban_areas = self.decide_number_of_cities(size)
 
-        self.towns = []
-        self.villages = []
-        self.hamlets = []
-        self.metropolitans = self.create_city_objects(Metropolis, size, size)
-        self.urban_centers = self.create_city_objects(UrbanCenter, size*2, size)
+        self.towns = list()
+        self.villages = list()
+        self.hamlets = list()
+        
+        self.metropolitans = self.create_city_objects(Metropolis, num_metropolitans, size)
+        self.urban_centers = self.create_city_objects(UrbanCenter, num_urban_areas, size)
         self.create_highway_system(size)
 
         main_connections = self.get_coordinates(self.metropolitans + self.urban_centers)
         main_connections += self.highway_points
-        self.add_random_connections(main_connections, MAIN_ROAD_COST, size, 20)
+        #self.add_random_connections(main_connections, MAIN_ROAD_COST, size, 20)
         
         if size > 5:
             self.towns += self.create_city_objects(Town, size*4, size)
@@ -153,11 +173,10 @@ class RoadNetwork:
         # print("Generated random connections")
         self.make_connected(main_connections, MAIN_ROAD_COST, strict=False)
         # #self.make_connected(self.layer1 + self.layer2 + self.layer3 + self.layer4 + self.layer5, RURAL_ROAD_COST)
+        
         before = self.G.number_of_edges()
-        while self.remove_redundant_nodes():
-            pass
+        self.remove_redundant_nodes()
         after = self.G.number_of_edges()
-
         print(f"Removed {before - after} redundant nodes")
 
         end_time = time.time()
@@ -449,24 +468,25 @@ class RoadNetwork:
             self.connect_with_potential_stop(city1, city2, points, cost, 10, precision)
 
     def remove_redundant_nodes(self):
-        nodes_to_remove = []
-        removed = False
+        removed = True
         
-        for node in self.G.nodes():
-            neighbors = list(self.G.neighbors(node))
-            if len(neighbors) == 2 and node not in city_connections:
-                u, v = neighbors
-                weight_u_node = self.G.edges[(u, node)]['weight']
-                weight_node_v = self.G.edges[(node, v)]['weight']
-                weight_uv = weight_u_node + weight_node_v
-                self.G.add_edge(u, v, weight=weight_uv)
-                nodes_to_remove.append(node)
-                removed = True
+        while removed:
+            removed = False
+            nodes_to_remove = []
 
-        for node in nodes_to_remove:
-            self.G.remove_node(node)
+            for node in self.G.nodes():
+                neighbors = list(self.G.neighbors(node))
+                if len(neighbors) == 2 and node not in city_connections:
+                    u, v = neighbors
+                    weight_u_node = self.G.edges[(u, node)]['weight']
+                    weight_node_v = self.G.edges[(node, v)]['weight']
+                    weight_uv = weight_u_node + weight_node_v
+                    self.G.add_edge(u, v, weight=weight_uv)
+                    nodes_to_remove.append(node)
+                    removed = True
 
-        return removed
+            for node in nodes_to_remove:
+                self.G.remove_node(node)
     
     def plot_old(self, show_gas_stations=False, show_cameras=False):
         colors = []
@@ -670,6 +690,4 @@ class RoadNetwork:
 
 
 
-graph1 = RoadNetwork()
-graph1.generate(seed=29922, size=11, camery_density=40, gas_station_density=5, suburbs_size=5)
-graph1.plot(show_cameras=False, show_gas_stations=False)
+

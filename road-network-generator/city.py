@@ -9,6 +9,9 @@ class BaseCity:
         self.type = None
         self.generate(size)
 
+    def get_points_of_interest(self):
+        return self.poi
+
     def generate(self, size):
         pass
 
@@ -46,64 +49,87 @@ class Metropolis(BaseCity):
         super().__init__(position, road_network, size)
 
     def generate(self, size):
-        num_suburbs = 10
+        num_suburbs = 0
         num_towns = 0
+        town_spread = 10
         num_streets = 0
         street_radius = 0
 
-        if size > 3:
-            num_suburbs += 1
-        if size > 5:
-            num_suburbs += 1
-            num_streets += 2
-            street_radius = 20
-        if size > 7:
-            num_streets += 3
-            street_radius += 10
-        if size > 9:
-            num_streets += 1
-            street_radius += 10
-            num_towns += 1
-        if size > 11:
-            num_streets += 2
-            street_radius += 10
-        if size > 13:
-            num_streets += 2
-            num_towns += 2
         if size > 15:
-            num_streets += 2
+            num_streets = 12
+            street_radius = 40
+            num_towns = 5
+            num_suburbs = 11
+        if size > 12:
+            num_streets = 10
+            street_radius = 40
+            num_towns = 5
+            num_suburbs = 10
+        elif size > 9:
+            num_streets = 6
+            street_radius = 35
+            num_towns = 4
+            num_suburbs = 7
+        elif size > 8:
+            num_streets = 4
+            street_radius = 35
+            num_towns = 3
+            num_suburbs = 3
+        elif size > 7:
+            num_streets = 6
+            street_radius = 35
+            num_towns = 4
+            num_suburbs = 7
+        elif size > 6:
+            num_streets = 3
+            street_radius = 30
+            num_towns = 2
+            num_suburbs = 4
+        elif size > 4:
+            num_suburbs = 4
+            num_towns = 5
+            town_spread = 5
+        elif size > 3:
+            num_towns = 5
+            town_spread = 5
+        elif size > 2:
+            num_towns = 11
+            town_spread = 5
 
         self.generate_streets(radius=street_radius, num=num_streets)
         self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, 15, size)
-        self.generate_clusters(num_towns, MAIN_ROAD_COST, Town, 10, size)
+        self.generate_clusters(num_towns, MAIN_ROAD_COST, Town, town_spread, size)
 
 class UrbanCenter(BaseCity):
     def __init__(self, position, road_network, size):
         super().__init__(position, road_network, size)
 
     def generate(self, size):
-        num_suburbs = 5
+        num_suburbs = 0
         num_towns = 0
         num_streets = 0
         street_radius = 0
 
-        if size > 3:
-            num_suburbs += 1
-        if size > 5:
-            num_suburbs += 1
-            num_streets += 2
-            street_radius = 20
-        if size > 7:
-            num_towns += 1
-            num_streets += 3
-            street_radius += 10
-            num_towns += 1
-        if size > 9:
-            num_streets += 1
-            street_radius += 10
-        if size > 11:
-            num_streets += 2
-            street_radius += 10
+        if size > 13:
+            street_radius = 40
+            num_streets = 8
+            num_towns = 3
+            num_suburbs = 6
+        elif size > 8:
+            street_radius = 30
+            num_streets = 6
+            num_towns = 2
+            num_suburbs = 4
+        elif size > 6:
+            street_radius = 30
+            num_streets = 5
+            num_towns = 2
+            num_suburbs = 3
+        elif size > 4:
+            num_towns = 3
+            num_suburbs = 3
+        elif size > 3:
+            num_towns = 3
 
         self.generate_streets(radius=street_radius, num=num_streets)
         self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, 15, size)
@@ -116,8 +142,25 @@ class Town(BaseCity):
         self.rn.towns.append(self)
 
     def generate(self, size):
-        self.generate_streets(radius=10, num=5)
-        self.generate_clusters(2, MINOR_ROAD_COST, Suburb, 20, size)
+        num_suburbs = 0
+        num_streets = 0
+        suburb_radius = 20
+
+        if size > 10:
+            num_suburbs = 2
+            num_streets = 5
+        elif size > 6:
+            num_suburbs = 6
+            num_streets = 5
+            suburb_radius = 15
+        elif size > 4:
+            num_suburbs = 5
+        elif size > 3:
+            num_suburbs = 3
+        
+
+        self.generate_streets(radius=20, num=num_streets)
+        self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, suburb_radius, size)
 
 class Village(BaseCity):
     def __init__(self, position, road_network, size):
@@ -126,7 +169,12 @@ class Village(BaseCity):
         self.rn.villages.append(self)
 
     def generate(self, size):
-        self.generate_streets(radius=20, num=4)
+        num_streets = 2
+
+        if size > 11:
+            num_streets = 4
+
+        self.generate_streets(radius=20, num=num_streets)
 
 class Hamlet(BaseCity):
     def __init__(self, position, road_network, size):
