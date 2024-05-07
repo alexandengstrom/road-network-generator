@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 import time
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet, BaseCity
+import plotter
 
 city_connections = dict()
 
@@ -229,9 +230,12 @@ class RoadNetwork:
 
             if not neighbours:
                 return
-            
-            to_x, to_y = neighbours[0]
-            self.highway_points += self.connect_with_potential_stop((x, y), (to_x, to_y), cities_to_connect, HIGHWAY_COST, 10, 50)
+
+            for i, (to_x, to_y) in enumerate(neighbours):
+                self.highway_points += self.connect_with_potential_stop((x, y), (to_x, to_y), cities_to_connect, HIGHWAY_COST, 10, 50)
+
+                if random.randint(0, 1) > 0:
+                    break
             #self.highway_points += self.connect((x, y), (to_x, to_y), HIGHWAY_COST)
         
         #self.connect_with_others(self.layer1, HIGHWAY_COST, num=2)

@@ -72,9 +72,9 @@ class Metropolis(BaseCity):
         town_spread = 10
         num_streets = 0
         street_radius = 0
-        circle_points = 0
-        circle_radius = 30
-        circle_radius_offset = random.randint(-10, 10)
+        circle_points = 5
+        circle_radius = 50
+        circle_radius_offset = random.randint(-15, 15)
 
         if size > 15:
             num_streets = 12
@@ -88,22 +88,25 @@ class Metropolis(BaseCity):
             num_towns = 5
             num_suburbs = 10
             circle_radius = 40
+            circle_points = 20
         elif size > 9:
             num_streets = 6
             street_radius = 35
             num_towns = 4
             num_suburbs = 7
+            circle_points = 13
         elif size > 8:
             num_streets = 4
             street_radius = 35
             num_towns = 3
-            circle_points = 16
+            circle_points = 11
             num_suburbs = 3
         elif size > 7:
             num_streets = 6
             street_radius = 35
             num_towns = 4
             num_suburbs = 7
+            circle_points = 10
         elif size > 6:
             num_streets = 3
             street_radius = 30
@@ -113,7 +116,6 @@ class Metropolis(BaseCity):
             num_suburbs = 4
             num_towns = 5
             town_spread = 5
-            circle_points = 5
         elif size > 3:
             num_towns = 5
             town_spread = 5
@@ -121,10 +123,16 @@ class Metropolis(BaseCity):
             num_towns = 11
             town_spread = 5
 
-        self.generate_circle(radius=circle_radius + circle_radius_offset, num_points=circle_points, cost=MAIN_ROAD_COST)
+        circle_radius += random.randint(-15, 15)
 
-        if size > 7:
-            self.generate_circle(radius=circle_radius + circle_radius_offset // 2, num_points=circle_points, cost=MINOR_ROAD_COST)
+        self.generate_circle(radius=circle_radius, num_points=circle_points, cost=MAIN_ROAD_COST)
+        
+        if circle_radius > 60:
+            self.generate_circle(radius=circle_radius - 10, num_points=circle_points, cost=MAIN_ROAD_COST)
+        if circle_radius > 50:
+            self.generate_circle(radius=circle_radius - 20, num_points=circle_points, cost=MINOR_ROAD_COST)
+        if size > 40:
+            self.generate_circle(radius=circle_radius - 32, num_points=circle_points, cost=MINOR_ROAD_COST)
 
 
 
