@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 def distance(city1, city2):
     return np.sqrt((city1[0] - city2[0])**2 + (city1[1] - city2[1])**2)
@@ -25,3 +26,30 @@ def point_inside_circle(point, circle_origin, radius, target):
     if distance_squared > (target[0] - circle_origin[0])**2 + (target[1] - circle_origin[1])**2:
         return False
     return distance_squared <= radius**2
+
+import math
+
+def create_circle_positions(center, radius, width, height, num_points):
+    cx, cy = center
+    
+    points = []
+    
+    for i in range(num_points):
+        angle = 2 * math.pi * i / num_points
+        
+        x = int(cx + radius * math.cos(angle))
+        y = int(cy + radius * math.sin(angle))
+
+        x += random.randint(-radius // 11, radius // 11)
+        y += random.randint(-radius // 11, radius // 11)
+        
+        x = max(5, min(width-1, x))
+        y = max(5, min(height-1, y))
+        
+        points.append((x, y))
+    
+    # Sort points based on their angle from the center
+    points.sort(key=lambda point: math.atan2(point[1] - cy, point[0] - cx))
+    
+    return points
+

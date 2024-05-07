@@ -23,9 +23,13 @@ class RoadNetwork:
         self.highway_points = list()
         self.cameras = list()
         self.gas_stations = list()
+        self.important_points = list()
         self.width = width
         self.height = height
         self.poi = {}
+
+    def add_important_points(self, points):
+        self.important_points += points
 
     def add_points_of_interest(self, points):
         for key, value in points.items():
@@ -102,23 +106,36 @@ class RoadNetwork:
 
         main_connections = self.get_coordinates(self.metropolitans + self.urban_centers)
         main_connections += self.highway_points
-        #self.add_random_connections(main_connections, MAIN_ROAD_COST, size, 20)
+
+        all_poi = main_connections
+
+        if size > 15:
+            self.add_random_connections(self.get_coordinates(self.towns), MINOR_ROAD_COST, size, 40)
         
         if size > 5:
             self.towns += self.create_city_objects(Town, size*4, size)
-            self.connect_point_to_nearest_larger_point(main_connections, self.get_coordinates(self.towns), MAIN_ROAD_COST, 20, 10)
-            self.add_random_connections(self.get_coordinates(self.towns), MINOR_ROAD_COST, size, 40)
+            self.connect_point_to_nearest_larger_point(main_connections, self.get_coordinates(self.towns), MINOR_ROAD_COST, 20, 10)
+            town_cors = self.get_coordinates(self.towns)
+            all_poi += town_cors
+            self.add_random_connections(town_cors, MINOR_ROAD_COST, size, 40)
         if size > 8:
             self.villages = self.create_city_objects(Village, size*8, size)
             village_cors = self.get_coordinates(self.villages)
+            all_poi += village_cors
             self.connect_point_to_nearest_larger_point(main_connections + self.get_coordinates(self.towns), village_cors, RURAL_ROAD_COST, 20, 10)
             self.add_random_connections(self.get_coordinates(self.villages), RURAL_ROAD_COST, size, 40)
 
         if size > 12:
             self.hamlets = self.create_city_objects(Hamlet, size*16, size)
             hamlet_cors = self.get_coordinates(self.hamlets)
+
             connections = main_connections + self.get_coordinates(self.towns) + self.get_coordinates(self.villages)
-            self.connect_point_to_nearest_larger_point(connections, hamlet_cors, RURAL_ROAD_COST, 20, 10)
+            self.connect_point_to_nearest_larger_point(all_poi, hamlet_cors, RURAL_ROAD_COST, 20, 10)
+            all_poi += hamlet_cors
+            self.add_random_connections(all_poi, MINOR_ROAD_COST, size * 50, size)
+            self.add_random_connections(all_poi, RURAL_ROAD_COST, size * 100, size)
+
+        
 
         #self.create_highway_system(size)
         # print("Generated layer 1")
@@ -171,7 +188,9 @@ class RoadNetwork:
         #     self.add_random_connections(self.layer1 + self.layer2, MINOR_ROAD_COST, 3)
 
         # print("Generated random connections")
-        self.make_connected(main_connections, MAIN_ROAD_COST, strict=False)
+
+
+        self.make_connected(all_poi, SLOW_ROAD_COST, strict=False)
         # #self.make_connected(self.layer1 + self.layer2 + self.layer3 + self.layer4 + self.layer5, RURAL_ROAD_COST)
         
         before = self.G.number_of_edges()
@@ -232,7 +251,7 @@ class RoadNetwork:
                         w_new_x = random.randint(max((0, w_point[0] - radius//2)), min((w_point[0] + radius//2, self.width - 1)))
                         w_new_y = random.randint(max((0, w_point[1] - radius//2)), min((w_point[1] + radius//2, self.height - 1)))
                         w_n_point = (w_new_x, w_new_y)
-                        way_points2 = self.connect(point, n_point, STREET_COST)
+                        way_points2 = self.connect(w_point, w_n_point, STREET_COST)
 
 
     def create_city_suburbs(self, size, graph_size):
@@ -361,31 +380,28 @@ class RoadNetwork:
             for closest_big_city in closest_big_cities:
                 self.connect(small_city, closest_big_city, cost)
                 self.G.add_node(small_city)
-
-    def connect_with_others(self, cities, cost, num=2):
-        raise
-        if random.randint(0, 1 < 1):
-            return
-        
-        for small_city in cities:
-            closest_big_cities = sorted(cities, key=lambda city: distance(city, small_city))[2:num+1]
-
-            for closest_big_city in closest_big_cities:
-                if not city_connections[small_city][closest_big_city]:
-                    self.connect(small_city, closest_big_city, cost)
-                    self.G.add_node(small_city)
     
     def make_connected(self, layers, cost, strict=True):
         while not nx.is_connected(self.G):
             components = list(nx.connected_components(self.G))
+            print(len(components))
 
             if not strict:
-                nodes_to_connect = [list(component)[0] for component in components]
-                self.connect(nodes_to_connect[0], nodes_to_connect[1], cost=cost)
-                continue
+                index = random.randint(0, len(components) - 1)
+                nodes_to_connect = [list(component)[index] for component in components]
 
+                city1 = random.randint(0, len(nodes_to_connect) - 1)
+                city2 = random.randint(0, len(nodes_to_connect) - 1)
+
+                while city1 == city2:
+                    city2 = random.randint(0, len(nodes_to_connect) - 1)
+
+                self.connect(nodes_to_connect[city1], nodes_to_connect[city2], cost=cost)
+                continue
+            
             nodes_to_connect = [list(filter(lambda city: city in layers, component)) for component in components]
 
+            flag = False
             for i in range(len(nodes_to_connect[0])):
                 flag = False
                 for j in range(len(nodes_to_connect[1])):
@@ -398,9 +414,9 @@ class RoadNetwork:
                 if flag:
                     break
 
-            if not flag:
+                if not flag:
                 # If we couldnt find a good way to connect
-                self.highway_points = self.connect(nodes_to_connect[0][0], nodes_to_connect[1][0], cost=cost)
+                    self.highway_points = self.connect(nodes_to_connect[0][0], nodes_to_connect[1][0], cost=cost)
 
             
 
@@ -432,27 +448,13 @@ class RoadNetwork:
         return way_points
 
     def connect_point_to_nearest_larger_point(self, points, small_points, cost, curvature=5, precision=None):
+        way_points = list()
+
         for small_point in small_points:
             closest_big_city = min(points, key=lambda city: distance(city, small_point))
-            self.connect_with_potential_stop(small_point, closest_big_city, small_points, cost, curvature, precision)
-            continue
+            way_points += self.connect_with_potential_stop(small_point, closest_big_city, small_points, cost, curvature, precision)
 
-            flag = False
-            if precision:
-                points_between = interpolate_points(small_point, closest_big_city, precision)
-                for origin in points_between:
-                    for potential_conn in small_points:
-                        if point_inside_circle(potential_conn, origin, 50) and potential_conn != small_point:
-                            self.connect(small_point, potential_conn, cost, curvature)
-                            self.G.add_node(small_point)
-                            flag = True
-                            break
-                    if flag:
-                        break
-            
-            if not flag:
-                self.connect(small_point, closest_big_city, cost, curvature)
-                self.G.add_node(small_point)
+        return way_points
 
     def find_middle_points(self):
         pass
@@ -476,7 +478,7 @@ class RoadNetwork:
 
             for node in self.G.nodes():
                 neighbors = list(self.G.neighbors(node))
-                if len(neighbors) == 2 and node not in city_connections:
+                if len(neighbors) == 2 and node not in city_connections and node not in self.important_points:
                     u, v = neighbors
                     weight_u_node = self.G.edges[(u, node)]['weight']
                     weight_node_v = self.G.edges[(node, v)]['weight']
@@ -487,49 +489,6 @@ class RoadNetwork:
 
             for node in nodes_to_remove:
                 self.G.remove_node(node)
-    
-    def plot_old(self, show_gas_stations=False, show_cameras=False):
-        colors = []
-        self.widths = []
-        node_sizes = []
-        node_colors = []
-
-        for u, v, data in self.G.edges(data=True):
-            distance_uv = distance(u, v)
-            avg_cost = data["weight"] / distance_uv
-
-            for cost, color in EDGE_COLORS.items():
-                if avg_cost < cost + 0.2:
-                    colors.append(color)
-                    self.widths.append(EDGE_SIZES[cost])
-                    break
-            else:
-                colors.append(EDGE_COLORS[SLOW_ROAD_COST])
-                self.widths.append(EDGE_SIZES[SLOW_ROAD_COST])
-
-        for node in self.G.nodes():
-            if node in self.layer1:
-                node_sizes.append(200)
-                node_colors.append(EDGE_COLORS[HIGHWAY_COST])
-            elif node in self.layer2:
-                node_sizes.append(50)
-                node_colors.append(EDGE_COLORS[MAIN_ROAD_COST])
-            elif node in self.layer3:
-                node_sizes.append(20)
-                node_colors.append(EDGE_COLORS[MINOR_ROAD_COST])
-            elif show_cameras and node in self.cameras:
-                node_sizes.append(200)
-                node_colors.append("red")
-            elif show_gas_stations and node in self.gas_stations:
-                node_sizes.append(50)
-                node_colors.append("blue")
-            else:
-                node_sizes.append(0)
-                node_colors.append(EDGE_COLORS[SLOW_ROAD_COST])
-
-        pos = {node: node for node in self.G.nodes()}
-        nx.draw(self.G, pos, node_size=node_sizes, node_color=node_colors, edge_color=colors, width=self.widths, with_labels=False)
-        plt.show()
 
     def plot(self, show_gas_stations=False, show_cameras=False):
         colors = []
