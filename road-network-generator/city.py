@@ -8,7 +8,6 @@ class BaseCity:
         self.poi = {}
         self.rn = road_network
         self.type = None
-        self.generate(size)
 
     def get_points_of_interest(self):
         return self.poi
@@ -25,7 +24,7 @@ class BaseCity:
         for _ in range(num_suburbs):
             new_x = random.randint(max((0, x - self.rn.width // spread)), min((x + self.rn.width // spread, self.rn.width - 1)))
             new_y = random.randint(max((0, y - self.rn.height // spread)), min((y + self.rn.height // spread, self.rn.height - 1)))
-            self.rn.connect_with_potential_stop((x, y), (new_x, new_y), local_points, cost, 20, 20)
+            self.rn.connect_with_potential_stop((x, y), (new_x, new_y), local_points, cost, 20, 30)
             #self.rn.connect((x, y), (new_x, new_y), cost)
             suburbs.append(Type((new_x, new_y), self.rn, size))
             self.poi[new_x, new_y] = Type
@@ -47,7 +46,15 @@ class BaseCity:
                     w_n_point = (w_new_x, w_new_y)
                     way_points2 = self.rn.connect(w_n_point, w_point, STREET_COST)
 
-    def generate_circle(self, radius, num_points, cost):
+    def generate_circle_streets(self, way_points, num, radius):
+        for w_point in way_points:
+            for _ in range(num // 2):
+                w_new_x = random.randint(max((0, w_point[0] - radius//2)), min((w_point[0] + radius//2, self.rn.width - 1)))
+                w_new_y = random.randint(max((0, w_point[1] - radius//2)), min((w_point[1] + radius//2, self.rn.height - 1)))
+                w_n_point = (w_new_x, w_new_y)
+                way_points2 = self.rn.connect(w_n_point, w_point, STREET_COST)
+
+    def generate_circle(self, radius, num_points, cost, way_point_density=5):
         width = self.rn.width
         height = self.rn.height
         points = create_circle_positions(self.pos, radius, width, height, num_points)
@@ -59,8 +66,9 @@ class BaseCity:
             else:
                 self.rn.connect(points[i], points[i + 1], cost)
 
-            if random.randint(0, 10) < 2:
-                self.rn.connect(self.pos, points[i], cost)
+            if random.randint(0, 1) > 0:
+                way_points = self.rn.connect(self.pos, points[i], cost, way_point_density)
+                self.generate_circle_streets(way_points, 5, 20)
 
 class Metropolis(BaseCity):
     def __init__(self, position, road_network, size):
@@ -74,7 +82,7 @@ class Metropolis(BaseCity):
         street_radius = 0
         circle_points = 5
         circle_radius = 50
-        circle_radius_offset = random.randint(-15, 15)
+        circle_radius_offset = random.randint(-15, 25)
 
         if size > 15:
             num_streets = 12
@@ -94,19 +102,19 @@ class Metropolis(BaseCity):
             street_radius = 35
             num_towns = 4
             num_suburbs = 7
-            circle_points = 13
+            circle_points = 19
         elif size > 8:
             num_streets = 4
             street_radius = 35
             num_towns = 3
-            circle_points = 11
+            circle_points = 17
             num_suburbs = 3
         elif size > 7:
             num_streets = 6
             street_radius = 35
             num_towns = 4
             num_suburbs = 7
-            circle_points = 10
+            circle_points = 15
         elif size > 6:
             num_streets = 3
             street_radius = 30
@@ -123,22 +131,27 @@ class Metropolis(BaseCity):
             num_towns = 11
             town_spread = 5
 
-        circle_radius += random.randint(-15, 15)
+        circle_radius += random.randint(-20, 10)
 
-        self.generate_circle(radius=circle_radius, num_points=circle_points, cost=MAIN_ROAD_COST)
+        if size > 5:
+            self.generate_circle(radius=circle_radius, num_points=circle_points, cost=MAIN_ROAD_COST)
         
-        if circle_radius > 60:
+        if size > 6 and circle_radius > 60:
             self.generate_circle(radius=circle_radius - 10, num_points=circle_points, cost=MAIN_ROAD_COST)
-        if circle_radius > 50:
+        if size > 8 and circle_radius > 50:
             self.generate_circle(radius=circle_radius - 20, num_points=circle_points, cost=MINOR_ROAD_COST)
-        if size > 40:
-            self.generate_circle(radius=circle_radius - 32, num_points=circle_points, cost=MINOR_ROAD_COST)
+        if size > 9 and size > 40:
+            self.generate_circle(radius=circle_radius - 32, num_points=circle_points, cost=RURAL_ROAD_COST)
 
 
 
-        self.generate_clusters(num_towns, MAIN_ROAD_COST, Town, town_spread, size)
-        self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, 15, size)
-        self.generate_streets(radius=street_radius, num=num_streets)
+        self.generate_clusters(num_towns, MINOR_ROAD_COST, Town, town_spread, size)
+
+        if size > 5:
+            self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, 15, size)
+        
+        if size > 7:
+            self.generate_streets(radius=circle_radius, num=num_streets)
 
 class UrbanCenter(BaseCity):
     def __init__(self, position, road_network, size):
@@ -171,10 +184,12 @@ class UrbanCenter(BaseCity):
         elif size > 3:
             num_towns = 3
 
-        self.generate_circle(radius=30, num_points=10, cost=MINOR_ROAD_COST)
+        if size > 6:
+            self.generate_circle(radius=30, num_points=15, cost=MINOR_ROAD_COST)
+
         self.generate_clusters(num_towns, MAIN_ROAD_COST, Town, 10, size)
         self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, 15, size)
-        self.generate_streets(radius=street_radius, num=num_streets)
+        self.generate_streets(radius=30, num=num_streets)
         
         
         
@@ -184,6 +199,9 @@ class Town(BaseCity):
         super().__init__(position, road_network, size)
         self.rn.add_points_of_interest({self.pos: Town})
         self.rn.towns.append(self)
+
+        if size > 6:
+            self.generate(size)
 
     def generate(self, size):
         num_suburbs = 0
@@ -202,8 +220,8 @@ class Town(BaseCity):
         elif size > 3:
             num_suburbs = 3
         
-
-        self.generate_streets(radius=20, num=num_streets)
+        self.generate_circle(radius=15, num_points=10, cost=RURAL_ROAD_COST)
+        #self.generate_streets(radius=20, num=num_streets)
         self.generate_clusters(num_suburbs, MINOR_ROAD_COST, Suburb, suburb_radius, size)
 
 class Village(BaseCity):
@@ -212,19 +230,25 @@ class Village(BaseCity):
         self.rn.add_points_of_interest({self.pos: Village})
         self.rn.villages.append(self)
 
+        if size > 10:
+            self.generate(size)
+
     def generate(self, size):
         num_streets = 2
 
         if size > 11:
             num_streets = 4
 
-        self.generate_streets(radius=20, num=num_streets)
+        self.generate_circle(radius=8, num_points=7, cost=SLOW_ROAD_COST)
+        #self.generate_streets(radius=20, num=num_streets)
 
 class Hamlet(BaseCity):
     def __init__(self, position, road_network, size):
         super().__init__(position, road_network, size)
         self.rn.add_points_of_interest({self.pos: Hamlet})
         self.rn.hamlets.append(self)
+        
+        self.generate(size)
 
     def generate(self, size):
         self.generate_streets(radius=20, num=2)
@@ -232,6 +256,8 @@ class Hamlet(BaseCity):
 class Suburb(BaseCity):
     def __init__(self, position, road_network, size):
         super().__init__(position, road_network, size)
+        if size > 7:
+            self.generate(size)
 
     def generate(self, size):
         num_streets = 0
@@ -250,5 +276,6 @@ class Suburb(BaseCity):
             num_streets += 1
             num_base_cities += 1
 
-        self.generate_streets(radius=50, num=num_streets)
-        suburbs = self.generate_clusters(num_base_cities, RURAL_ROAD_COST, BaseCity, 50, size)
+        self.generate_circle(radius=7, num_points=4, cost=SLOW_ROAD_COST, way_point_density=2)
+        #self.generate_streets(radius=50, num=num_streets)
+        #suburbs = self.generate_clusters(num_base_cities, RURAL_ROAD_COST, BaseCity, 50, size)
