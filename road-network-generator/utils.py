@@ -48,8 +48,10 @@ def create_circle_positions(center, radius, width, height, num_points):
         
         points.append((x, y))
     
-    # Sort points based on their angle from the center
     points.sort(key=lambda point: math.atan2(point[1] - cy, point[0] - cx))
     
     return points
+
+def get_closest_point_in_list(point, points):
+    return min(points, key=lambda city: distance(city, point))
 
