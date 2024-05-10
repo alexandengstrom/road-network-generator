@@ -42,6 +42,21 @@ The generator begins by creating a graph structure where different city types ar
 
 The roads in the network are assigned costs based on their type and importance. The highways will have lower cost than streets or rural roads. There is five different kind of roads in the graph. These are highways, main roads, minor roads, rural roads, slow roads and streets.
 
+The figure and table below shows how the number of nodes and edges grows as the variable size increases. This data was collected with a random seed for every generation which is why sometimes the number of edges decreases while the size increases.
+
+![Screenshot from 2024-05-10 19-38-51](https://github.com/alexandengstrom/road-network-generator/assets/123507241/970a6c17-8aea-457e-8c43-cb7df06f4ef1)
+
+
+| Size | Nodes  | Edges  |
+|------|--------|--------|
+| 1    | 20     | 20     |
+| 3    | 65     | 69     |
+| 5    | 894    | 1326   |
+| 10   | 10998  | 19289  |
+| 15   | 75129  | 135502 |
+| 20   | 170630 | 320529 |
+| 25   | 213142 | 408277 |
+
 ## Visual examples
 ![Screenshot from 2024-05-10 17-09-17](https://github.com/alexandengstrom/road-network-generator/assets/123507241/d8fbbce8-b12f-42a1-956a-80963ac56047)
 ![Screenshot from 2024-05-10 17-10-14](https://github.com/alexandengstrom/road-network-generator/assets/123507241/24d1688f-1824-42fa-997f-993905c66b67)
