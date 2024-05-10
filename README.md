@@ -39,6 +39,18 @@ Creates a graph with the dimensions 2000x1000 and saves it in JSON-format to my_
 rd-gen -W 2000 -H 1000 -s 15 -f -o my_graph.json -j -p
 ```
 
+### Save to file:
+If the `-j` flag is not used, the output will be in -rn format. This works in the following way:
+- First Line: Contains the graph's width and height separated by a space.
+- Second Line: Contains the total number of nodes ($|V|$) and edges ($|E|$) in the graph, separated by a space.
+- Following $|V|$ Lines: Each line represents one node with its **x-coordinate**, **y-coordinate**, and **node type** (like a traffic camera or regular intersection), separated by spaces.
+- Remaining $|E|$ Lines: Each edge is represented by a line that includes the **x** and **y** coordinates of the starting node (u), the **x** and **y** coordinates of the ending node (v) and the **weight** of the edge (e.g., representing the cost or distance), formatted to two decimal place.
+
+If the `-j` flag i used, the output will be in JSON-format:
+- Graph Dimensions: Encoded as properties **width** and **height**.
+- Nodes: A list of node objects, each containing **x**: The x-coordinate of the node, **y**: The y-coordinate of the node and **type**: The type of the node (like a traffic camera or regular intersection).
+- Edges: A list of edge objects, each describing a connection between two nodes and containing: **u**: An object with properties **x** and **y**, representing the starting node's coordinates, **v**: An object with properties **x** and **y**, representing the ending node's coordinates and **weight**: The weight of the edge, indicating the cost or distance.
+
 ## Algorithm
 The generator begins by creating a graph structure where different city types are instantiated with predefined properties based on their size and importance. Cities are placed randomly within a defined area while ensuring they maintain a minimum distance from each other to avoid overlap. The backbone of the network is formed by connecting major cities (metropolises and urban centers) with highways. These connections are designed to simulate main traffic routes and are the first to be laid out. The generator ensures these connections make geographical sense and avoid unnecessary detours. Once the primary connections are established, the generator begins to incorporate towns, villages, and hamlets. These smaller cities are connected to the nearest larger cities or directly to the highway system, using minor roads. At last last we delete all unnecessary nodes in the graph, this means all nodes which have just two neighbours and doesnt have a special meaning. After that we make sure the graph is connected and if not we add some extra edges.
 
