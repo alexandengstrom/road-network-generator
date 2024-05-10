@@ -1,5 +1,6 @@
 # Road Network Generator
-Road Network Generator is a command line tool designed to generate undirected weighted graph representations that resemble road networks. This tool is configurable through various flags allowing users to specify the size of the graph, utilize seeds for reproducible results, save graphs in different formats, and plot the graph visually. It guarantees the generation of a connected graph. The tool is great for things like simulations, academic studies, and testing pathfinding algorithms.
+Road Network Generator is a command line tool designed to generate undirected weighted graphs $G = (V, E)$, where vertices $V$ represent intersections, and edges $E$ represent road segments between these points. Each edge has an associated weight representing the cost, or distance combined with speed limit. The tool is great for things like simulations, academic studies, and testing pathfinding algorithms.
+
 ## Background
 I created the Road Network Generator to quickly produce different road network graphs for my experiments with pathfinding algorithms. This tool helps in testing these algorithms by generating varied and complex road networks easily. Traffic cameras are included in these networks as key points because i am experimenting with finding the shortest paths between all traffic camera pairs in an efficient way.
 ## Setup
