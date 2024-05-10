@@ -36,7 +36,7 @@ NODE_SIZES = {
     HAMLET: 7,
     }
 
-def plot(graph, show_gas_stations=False, show_cameras=False):
+def plot(graph, show_cameras=False):
         num_nodes = graph.G.number_of_nodes()
         num_edges = graph.G.number_of_edges()
         colors = []
@@ -85,9 +85,6 @@ def plot(graph, show_gas_stations=False, show_cameras=False):
             elif show_cameras and node in graph.cameras:
                  node_sizes.append(100)
                  node_colors.append("red")
-            # elif show_gas_stations and node in self.gas_stations:
-            #     node_sizes.append(50)
-            #     node_colors.append("blue")
             else:
                 node_sizes.append(0)
                 node_colors.append(EDGE_COLORS[SLOW_ROAD_COST])
