@@ -1,13 +1,9 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 import random
 from utils import distance, correct_cost, interpolate_points, point_inside_circle, calculate_midpoint
 from config import *
-import os
-from datetime import datetime
 import time
-from city import Metropolis, UrbanCenter, Town, Village, Hamlet, BaseCity
-import plotter
+from city import Metropolis, UrbanCenter, Town, Village, Hamlet
 
 city_connections = dict()
 
@@ -106,7 +102,7 @@ class RoadNetwork:
         
         self.metropolitans = self.create_city_objects(Metropolis, num_big_cities, self.size)
         self.urban_centers = self.create_city_objects(UrbanCenter, num_big_cities, self.size)
-        self.create_highway_system(self.size)
+        self.create_highway_system()
         self.log("Generated highway system")
 
         for city in self.metropolitans + self.urban_centers:
@@ -198,7 +194,7 @@ class RoadNetwork:
     def display_graph_creation_info(self, time_elapsed):
         self.log(f"Created graph with {self.G.number_of_nodes()} vertices and {self.G.number_of_edges()} edges in {round(time_elapsed, 2)} seconds")
 
-    def create_highway_system(self, size):
+    def create_highway_system(self):
         cities_to_connect = self.metropolitans + self.urban_centers
         cities_to_connect = list(map(lambda city: city.pos, cities_to_connect))
 

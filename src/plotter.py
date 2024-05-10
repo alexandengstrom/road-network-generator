@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from utils import distance, correct_cost, interpolate_points, point_inside_circle
+from utils import distance
 from config import *
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
 
