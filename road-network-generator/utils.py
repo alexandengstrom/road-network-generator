@@ -55,3 +55,26 @@ def create_circle_positions(center, radius, width, height, num_points):
 def get_closest_point_in_list(point, points):
     return min(points, key=lambda city: distance(city, point))
 
+def calculate_midpoint(city1, city2, curvature, width, height):
+    mid_x = (city1[0] + city2[0]) / 2
+    mid_y = (city1[1] + city2[1]) / 2
+        
+    offset_x = random.uniform(-curvature, curvature)
+    offset_y = random.uniform(-curvature, curvature)
+
+    if random.randint(0, 10) < 1:
+        offset_x += random.randint(-10, 10)
+
+    if random.randint(0, 10) < 1:
+        offset_y += random.randint(-10, 10)
+        
+    mid_x += offset_x
+    mid_y += offset_y
+
+    mid_x = max(0, min(width - 1, mid_x))
+    mid_y = max(0, min(height - 1, mid_y))
+        
+    mid_x = int(mid_x)
+    mid_y = int(mid_y)
+
+    return mid_x, mid_y
