@@ -6,7 +6,7 @@ from file_saver import save_to_file, save_to_json
 
 def main(args):
     graph = RoadNetwork(args.width, args.height)
-    graph.generate(size=args.size, seed=args.seed, camery_density=args.camera_density, logging=args.log)
+    graph.generate(size=args.size, seed=args.seed, camery_density=args.camera_density, make_complex=args.complex, logging=args.log)
 
     if args.plot:
         plotter.plot(graph, show_cameras=args.plot_cameras)
@@ -20,7 +20,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a customizable graph for road networks.")
     
-    parser.add_argument("-s", "--size", type=int, help="Decides the size of the graph", default=100)
+    parser.add_argument("-s", "--size", type=int, help="Decides the size of the graph", default=13)
     parser.add_argument("-S", "--seed", type=int, help="Generates the graph based on a seed. If not given, a random seed will be created", default=None)
     parser.add_argument("-W", "--width", type=int, help="The width of the graph, the max x coordinate", default=WIDTH)
     parser.add_argument("-H", "--height", type=int, help="The height of the graph, the max y coordinate", default=HEIGHT)
@@ -31,6 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", type=str, help="The name of the output file. This is used only if the -f flag is also used", default=None)
     parser.add_argument("-j", "--json", action='store_true', help="If set, the output file will be in JSON format. This is used only if -f flag is also used")
     parser.add_argument("-l", "--log", action='store_true', help="If set, logging messages will be displayed")
+    parser.add_argument("-x", "--complex", action='store_true', help="If set, a more accurate network will be created, but it will be more expensive")
 
     args = parser.parse_args()
 

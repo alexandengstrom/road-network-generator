@@ -1,8 +1,9 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from utils import distance, correct_cost, interpolate_points, point_inside_circle
 from config import *
-from city import Metropolis, UrbanCenter, Town, Village, Hamlet, BaseCity
+from city import Metropolis, UrbanCenter, Town, Village, Hamlet
 
 EDGE_COLORS = {
     HIGHWAY_COST: 'black', 
@@ -45,9 +46,7 @@ def plot(graph, show_cameras=False):
         node_colors = []
 
         pos = {node: node for node in graph.G.nodes()}
-        #pos = nx.spring_layout(graph.G)
 
-        # Sort the edges in so we plot the slowest roads first. This is so we can clearly see the highways.
         edges = sorted(graph.G.edges(data=True), reverse=True, key=lambda x: x[2]["weight"] / distance(x[0], x[1]))
 
         for u, v, data in edges:
@@ -84,7 +83,7 @@ def plot(graph, show_cameras=False):
                 node_colors.append(EDGE_COLORS[HAMLET])
             elif show_cameras and node in graph.cameras:
                  node_sizes.append(100)
-                 node_colors.append("red")
+                 node_colors.append("#34b4eb")
             else:
                 node_sizes.append(0)
                 node_colors.append(EDGE_COLORS[SLOW_ROAD_COST])
@@ -92,4 +91,7 @@ def plot(graph, show_cameras=False):
 
         nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
         plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
+
+        edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in EDGE_COLORS.items()}
+        plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')
         plt.show()

@@ -157,9 +157,10 @@ class RoadNetwork:
     def get_hamlets(self):
         return self.get_coordinates(self.hamlets)
             
-    def generate(self, size=STANDARD_SIZE, seed=None, camery_density=5, logging=False):
+    def generate(self, size=STANDARD_SIZE, seed=None, camery_density=5,  make_complex=False, logging=False):
         self.logging = logging
         self.size = size
+        self.make_complex = make_complex
         start_time = time.time()
 
         if not seed:
@@ -258,7 +259,7 @@ class RoadNetwork:
                 if random.randint(1, 10) > (10 - way_point_density):
                     points_on_way.append((tmp_x, tmp_y))
 
-                if random.randint(0, 10000) < self.camera_density and cost <= RURAL_ROAD_COST:
+                if random.randint(0, 10000) < self.camera_density and cost < STREET_COST:
                     self.cameras.append((tmp_x, tmp_y))
 
             new_cost = correct_cost(cur_x, tmp_x, cur_y, tmp_y, cost)
@@ -287,8 +288,6 @@ class RoadNetwork:
                 self.G.add_node(small_city)
 
     def make_connected(self, cost):
-        counter = 0
-
         if nx.is_connected(self.G):
             return
         
@@ -305,7 +304,7 @@ class RoadNetwork:
             
             # Its to expensive to calculate correct connections if there are many components
             # We can afford to do it for the last 20 components
-            if number_of_components - connected_components > 20:
+            if number_of_components - connected_components > 20 or not self.make_complex:
                 city1 = random.randint(0, len(main_comp) - 1)
                 city2 = random.randint(0, len(component) - 1)
                 self.connect(component[city2], main_comp[city1], cost=cost)
