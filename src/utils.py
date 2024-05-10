@@ -15,8 +15,8 @@ def correct_cost(cur_x, tmp_x, cur_y, tmp_y, cost):
 
 
 def interpolate_points(point1, point2, num_points):
-    step_x = (point2[0] - point1[0]) / (num_points + 1)
-    step_y = (point2[1] - point1[1]) / (num_points + 1)
+    step_x = round((point2[0] - point1[0]) / (num_points + 1))
+    step_y = round((point2[1] - point1[1]) / (num_points + 1))
     
     intermediate_points = [(point1[0] + i * step_x, point1[1] + i * step_y) for i in range(1, num_points + 1)]
     
