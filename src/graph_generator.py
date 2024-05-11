@@ -1,6 +1,6 @@
 import networkx as nx
 import random
-from utils import distance, correct_cost, interpolate_points, point_inside_circle, calculate_midpoint
+from utils import distance, correct_cost, interpolate_points, point_inside_circle, calculate_midpoint, divide_into_squares, find_closest_pair, randomize_cost
 from config import *
 import time
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
@@ -182,6 +182,8 @@ class RoadNetwork:
             self.add_random_connections(cors, MAIN_ROAD_COST, size, 20)
             self.add_random_connections(cors, MINOR_ROAD_COST, size, 40)
 
+        self.connect_squares()
+
         self.remove_redundant_nodes()
         self.make_connected(SLOW_ROAD_COST)
         self.remove_redundant_nodes()
@@ -274,6 +276,34 @@ class RoadNetwork:
             cur_y = tmp_y
 
         return points_on_way
+    
+    def connect_squares(self):
+        points = self.get_main_connections() + self.get_towns() + self.get_villages() + self.get_hamlets()
+        squares = divide_into_squares(points, self.width, self.height, SQUARE_DIAMETER)
+
+        for i in range(len(squares)):
+            for j in range(len(squares[i])):
+                if j < SQUARE_DIAMETER - 1:
+                    if self.make_complex:
+                        city1, city2 = find_closest_pair(squares[i][j], squares[i][j + 1])
+                        if city1 and city2:
+                            self.connect(city1, city2, randomize_cost())
+                    elif len(squares[i][j]) > 0 and len(squares[i][j + 1]):
+                        city1 = random.choice(squares[i][j])
+                        city2 = sorted(squares[i][j+1], key=lambda city: distance(city, city1))[0]
+                        self.connect(city1, city2, SLOW_ROAD_COST)
+
+                if i < SQUARE_DIAMETER - 1:
+                    if self.make_complex:
+                        city1, city2 = find_closest_pair(squares[i][j], squares[i + 1][j])
+                        if city1 and city2:
+                            self.connect(city1, city2, randomize_cost())
+                    elif len(squares[i][j]) > 0 and len(squares[i + 1][j]):
+                        city1 = random.choice(squares[i][j])
+                        city2 = sorted(squares[i + 1][j], key=lambda city: distance(city, city1))[0]
+                        self.connect(city1, city2, SLOW_ROAD_COST)
+
+
     
     def connect_with_closest_points(self, cities, cost):
         for small_city in cities:

@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import math
+from config import *
 
 def distance(city1, city2):
     return np.sqrt((city1[0] - city2[0])**2 + (city1[1] - city2[1])**2)
@@ -77,3 +78,36 @@ def calculate_midpoint(city1, city2, curvature, width, height):
     mid_y = int(mid_y)
 
     return mid_x, mid_y
+
+def divide_into_squares(points, width, height, diameter):
+    square_width = width / diameter
+    square_height = height / diameter
+    
+    squares = [[[] for _ in range(diameter)] for _ in range(diameter)]
+    
+    for x, y in points:
+        col = int(x // square_width)
+        row = int(y // square_height)
+        
+        squares[min(row, diameter - 1)][min(col, diameter)].append((x, y))
+    
+    return squares
+
+
+def find_closest_pair(first, second):
+    from_point = None
+    to_point = None
+    min_distance = float("inf")
+
+    for node in first:
+        for conn_point in second:
+            cur_distance = distance(conn_point, node)
+            if cur_distance < min_distance:
+                from_point = node
+                to_point = conn_point
+                min_distance = cur_distance
+
+    return from_point, to_point
+
+def randomize_cost():
+    return random.choice([MAIN_ROAD_COST, MINOR_ROAD_COST, RURAL_ROAD_COST, SLOW_ROAD_COST])
