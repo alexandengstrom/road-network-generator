@@ -1,6 +1,6 @@
 import networkx as nx
 import random
-from utils import distance, correct_cost, interpolate_points, point_inside_circle, calculate_midpoint, divide_into_squares, find_closest_pair, randomize_cost
+from utils import distance, correct_cost, interpolate_points, point_inside_circle, calculate_midpoint, divide_into_squares, find_closest_pair, randomize_cost, find_closest
 from config import *
 import time
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
@@ -290,7 +290,7 @@ class RoadNetwork:
                             self.connect(city1, city2, randomize_cost())
                     elif len(squares[i][j]) > 0 and len(squares[i][j + 1]):
                         city1 = random.choice(squares[i][j])
-                        city2 = sorted(squares[i][j+1], key=lambda city: distance(city, city1))[0]
+                        city2 = find_closest(city1, squares[i][j + 1])
                         self.connect(city1, city2, SLOW_ROAD_COST)
 
                 if i < SQUARE_DIAMETER - 1:
@@ -300,7 +300,7 @@ class RoadNetwork:
                             self.connect(city1, city2, randomize_cost())
                     elif len(squares[i][j]) > 0 and len(squares[i + 1][j]):
                         city1 = random.choice(squares[i][j])
-                        city2 = sorted(squares[i + 1][j], key=lambda city: distance(city, city1))[0]
+                        city2 = find_closest(city1, squares[i + 1][j])
                         self.connect(city1, city2, SLOW_ROAD_COST)
 
 

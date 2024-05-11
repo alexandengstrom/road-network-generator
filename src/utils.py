@@ -111,3 +111,15 @@ def find_closest_pair(first, second):
 
 def randomize_cost():
     return random.choice([MAIN_ROAD_COST, MINOR_ROAD_COST, RURAL_ROAD_COST, SLOW_ROAD_COST])
+
+def find_closest(origo, points):
+    closest_point = None
+    min_distance = float("inf")
+
+    for node in points:
+        cur_distance = distance(origo, node)
+        if cur_distance < min_distance:
+            closest_point = node
+            min_distance = cur_distance
+
+    return closest_point
