@@ -323,6 +323,7 @@ class RoadNetwork:
         number_of_components = len(components)
         connected_components = 0
 
+        print(f"Components to connect: {len(components)}")
         for component in components:
             component = list(component)
             if component is main_comp:
@@ -335,11 +336,12 @@ class RoadNetwork:
                 city2 = random.randint(0, len(component) - 1)
                 self.connect(component[city2], main_comp[city1], cost=cost)
             else:
-                city2 = random.randint(0, len(component) - 1)
-                closest_big_city = sorted(list(main_comp), key=lambda city1: distance(city1, component[city2]))[0]
-                self.connect(component[city2], closest_big_city, cost=cost)
+                city1 = random.randint(0, len(component) - 1)
+                city2 = find_closest(component[city1], main_comp)
+                self.connect(component[city1], city2, cost=cost)
 
             connected_components += 1
+            print(f"Connected components: {connected_components}/{number_of_components}")
 
         self.log(f"Created {connected_components} new edges to make the graph connected")
 
