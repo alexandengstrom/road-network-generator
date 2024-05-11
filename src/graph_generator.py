@@ -323,7 +323,7 @@ class RoadNetwork:
         number_of_components = len(components)
         connected_components = 0
 
-        print(f"Components to connect: {len(components)}")
+        self.log(f"The graph is disconnected, starting to connect {len(components)} components...")
         for component in components:
             component = list(component)
             if component is main_comp:
@@ -340,9 +340,7 @@ class RoadNetwork:
                 self.connect(city1, city2, cost=cost)
 
             connected_components += 1
-            print(f"Connected components: {connected_components}/{number_of_components}")
-
-        self.log(f"Created {connected_components} new edges to make the graph connected")
+            self.log(f"Connected components: {connected_components}/{number_of_components}")
 
     def make_highways_connected(self, layers, cost, strict=True):
         # The time complexity of this function looks really bad but we will never have many nodes to work with here.
@@ -449,7 +447,7 @@ class RoadNetwork:
                 self.G.remove_node(node)
 
         after = self.G.number_of_edges()
-        self.log(f"Removed {before - after} redundant nodes in the first round")
+        self.log(f"Removed {before - after} redundant nodes")
 
     def log(self, message):
         if self.logging:
