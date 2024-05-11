@@ -336,9 +336,8 @@ class RoadNetwork:
                 city2 = random.randint(0, len(component) - 1)
                 self.connect(component[city2], main_comp[city1], cost=cost)
             else:
-                city1 = random.randint(0, len(component) - 1)
-                city2 = find_closest(component[city1], main_comp)
-                self.connect(component[city1], city2, cost=cost)
+                city1, city2 = find_closest_pair(component, main_comp)
+                self.connect(city1, city2, cost=cost)
 
             connected_components += 1
             print(f"Connected components: {connected_components}/{number_of_components}")

@@ -2,6 +2,7 @@ import numpy as np
 import random
 import math
 from config import *
+from scipy.spatial import KDTree
 
 def distance(city1, city2):
     return np.sqrt((city1[0] - city2[0])**2 + (city1[1] - city2[1])**2)
@@ -94,20 +95,46 @@ def divide_into_squares(points, width, height, diameter):
     return squares
 
 
+# def find_closest_pair(first, second):
+#     from_point = None
+#     to_point = None
+#     min_distance = float("inf")
+
+#     for node in first:
+#         for conn_point in second:
+#             cur_distance = distance(conn_point, node)
+#             if cur_distance < min_distance:
+#                 from_point = node
+#                 to_point = conn_point
+#                 min_distance = cur_distance
+#     return from_point, to_point
+
+
 def find_closest_pair(first, second):
+    first = np.array(first, dtype=float).reshape(-1, 2)
+    second = np.array(second, dtype=float).reshape(-1, 2)
+    
+    if not first.size or not second.size:
+        return None, None
+    
+    tree = KDTree(second)
+    
+    min_distance = float('inf')
     from_point = None
     to_point = None
-    min_distance = float("inf")
+    
+    for point in first:
+        distance, index = tree.query(point)
+        if distance < min_distance:
+            min_distance = distance
+            from_point = point
+            to_point = second[index]
 
-    for node in first:
-        for conn_point in second:
-            cur_distance = distance(conn_point, node)
-            if cur_distance < min_distance:
-                from_point = node
-                to_point = conn_point
-                min_distance = cur_distance
+    from_point = (int(from_point[0]), int(from_point[1]))
+    to_point = (int(to_point[0]), int(to_point[1]))
 
     return from_point, to_point
+
 
 def randomize_cost():
     return random.choice([MAIN_ROAD_COST, MINOR_ROAD_COST, RURAL_ROAD_COST, SLOW_ROAD_COST])
