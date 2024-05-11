@@ -124,7 +124,8 @@ class RoadNetwork:
         self.log("Generated towns")
 
     def get_towns(self):
-        return self.get_coordinates(self.towns)
+        towns = getattr(self, 'towns', [])
+        return self.get_coordinates(towns)
 
     def generate_villages(self):
         self.villages = list()
@@ -137,7 +138,8 @@ class RoadNetwork:
         self.log("Generated villages")
 
     def get_villages(self):
-        return self.get_coordinates(self.villages)
+        villages = getattr(self, 'villages', [])
+        return self.get_coordinates(villages)
 
     def generate_hamlets(self):
         self.hamlets = list()
@@ -151,7 +153,8 @@ class RoadNetwork:
         self.log("Generated hamlets")
 
     def get_hamlets(self):
-        return self.get_coordinates(self.hamlets)
+        hamlets = getattr(self, 'hamlets', [])
+        return self.get_coordinates(hamlets)
             
     def generate(self, size=STANDARD_SIZE, seed=None, camery_density=5,  make_complex=False, logging=False):
         self.logging = logging
@@ -279,11 +282,18 @@ class RoadNetwork:
     
     def connect_squares(self):
         points = self.get_main_connections() + self.get_towns() + self.get_villages() + self.get_hamlets()
-        squares = divide_into_squares(points, self.width, self.height, SQUARE_DIAMETER)
+        square_diameter = 10
+
+        if self.size == 1:
+            square_diameter = 1
+        elif self.size < 12:
+            square_diameter = self.size // 2
+
+        squares = divide_into_squares(points, self.width, self.height, square_diameter)
 
         for i in range(len(squares)):
             for j in range(len(squares[i])):
-                if j < SQUARE_DIAMETER - 1:
+                if j < square_diameter - 1:
                     if self.make_complex:
                         city1, city2 = find_closest_pair(squares[i][j], squares[i][j + 1])
                         if city1 and city2:
@@ -293,7 +303,7 @@ class RoadNetwork:
                         city2 = find_closest(city1, squares[i][j + 1])
                         self.connect(city1, city2, SLOW_ROAD_COST)
 
-                if i < SQUARE_DIAMETER - 1:
+                if i < square_diameter - 1:
                     if self.make_complex:
                         city1, city2 = find_closest_pair(squares[i][j], squares[i + 1][j])
                         if city1 and city2:
