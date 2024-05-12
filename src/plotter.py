@@ -57,8 +57,8 @@ NODE_SIZES = {
 
 @log
 def plot(graph, show_cameras=False, grayscale=False):
-        edge_colors_map = EDGE_COLORS if not grayscale else EDGE_COLORS_GRAYSCALE
-        node_colors_map = NODE_COLORS if not grayscale else NODE_COLORS_GRAYSCALE
+    edge_colors_map = EDGE_COLORS if not grayscale else EDGE_COLORS_GRAYSCALE
+    node_colors_map = NODE_COLORS if not grayscale else NODE_COLORS_GRAYSCALE
 
     num_nodes = graph.G.number_of_nodes()
     num_edges = graph.G.number_of_edges()
@@ -75,45 +75,45 @@ def plot(graph, show_cameras=False, grayscale=False):
         distance_uv = distance(u, v)
         avg_cost = data["weight"] / distance_uv
 
-            for cost, color in edge_colors_map.items():
-                if avg_cost < cost + 0.2:
-                    colors.append(color)
-                    widths.append(EDGE_SIZES[cost])
-                    break
-            else:
-                colors.append(edge_colors_map[SLOW_ROAD_COST])
-                widths.append(EDGE_SIZES[SLOW_ROAD_COST])
+        for cost, color in edge_colors_map.items():
+            if avg_cost < cost + 0.2:
+                colors.append(color)
+                widths.append(EDGE_SIZES[cost])
+                break
+        else:
+            colors.append(edge_colors_map[SLOW_ROAD_COST])
+            widths.append(EDGE_SIZES[SLOW_ROAD_COST])
 
     nx.draw_networkx_edges(graph.G, pos, edgelist=edges, edge_color=colors, width=widths)
 
-        for node in graph.G.nodes():
-            node_type = graph.poi.get(node)
-            if node_type == Metropolis:
-                node_sizes.append(NODE_SIZES[METROPOLIS])
-                node_colors.append(node_colors_map[METROPOLIS])
-            elif node_type == UrbanCenter:
-                 node_sizes.append(NODE_SIZES[URBAN_AREA])
-                 node_colors.append(node_colors_map[URBAN_AREA])
-            elif node_type == Town:
-                 node_sizes.append(NODE_SIZES[TOWN])
-                 node_colors.append(node_colors_map[TOWN])
-            elif node_type == Village:
-                node_sizes.append(NODE_SIZES[VILLAGE])
-                node_colors.append(node_colors_map[VILLAGE])
-            elif node_type == Hamlet:
-                node_sizes.append(NODE_SIZES[HAMLET])
-                node_colors.append(node_colors_map[HAMLET])
-            elif show_cameras and node in graph.cameras:
-                 node_sizes.append(100)
-                 node_colors.append("#34b4eb")
-            else:
-                node_sizes.append(0)
-                node_colors.append(edge_colors_map[SLOW_ROAD_COST])
+    for node in graph.G.nodes():
+        node_type = graph.poi.get(node)
+        if node_type == Metropolis:
+            node_sizes.append(NODE_SIZES[METROPOLIS])
+            node_colors.append(node_colors_map[METROPOLIS])
+        elif node_type == UrbanCenter:
+                node_sizes.append(NODE_SIZES[URBAN_AREA])
+                node_colors.append(node_colors_map[URBAN_AREA])
+        elif node_type == Town:
+                node_sizes.append(NODE_SIZES[TOWN])
+                node_colors.append(node_colors_map[TOWN])
+        elif node_type == Village:
+            node_sizes.append(NODE_SIZES[VILLAGE])
+            node_colors.append(node_colors_map[VILLAGE])
+        elif node_type == Hamlet:
+            node_sizes.append(NODE_SIZES[HAMLET])
+            node_colors.append(node_colors_map[HAMLET])
+        elif show_cameras and node in graph.cameras:
+                node_sizes.append(100)
+                node_colors.append("#34b4eb")
+        else:
+            node_sizes.append(0)
+            node_colors.append(edge_colors_map[SLOW_ROAD_COST])
 
 
     nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
     plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
 
-        edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in edge_colors_map.items()}
-        plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')
-        plt.show()
+    edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in edge_colors_map.items()}
+    plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')
+    plt.show()
