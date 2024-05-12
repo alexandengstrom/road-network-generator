@@ -421,25 +421,6 @@ class RoadNetwork:
 
         return way_points
 
-    def add_random_connections_between(self, first_points, second_points, connections, cost):
-        raise
-        for _ in range(connections):
-            city1 = random.choice(first_points)
-            city2 = random.choice(second_points)
-
-            self.connect_with_potential_stop(city1, city2, first_points, cost, 30, 30)
-
-    def add_random_connections(self, points, cost, connections, precision=None):
-        raise
-        for _ in range(connections):
-            city1 = random.choice(points)
-            city2 = random.choice(points)
-
-            while city1 == city2:
-                city2 = random.choice(points)
-
-            self.connect_with_potential_stop(city1, city2, points, cost, 10, precision)
-
     def remove_redundant_nodes(self):
         before = self.G.number_of_edges()
         removed = True
