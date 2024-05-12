@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 from utils import distance
 from config import *
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
+from error_handler import log
 
 EDGE_COLORS = {
     HIGHWAY_COST: 'black', 
@@ -54,24 +55,25 @@ NODE_SIZES = {
     HAMLET: 7,
     }
 
+@log
 def plot(graph, show_cameras=False, grayscale=False):
         edge_colors_map = EDGE_COLORS if not grayscale else EDGE_COLORS_GRAYSCALE
         node_colors_map = NODE_COLORS if not grayscale else NODE_COLORS_GRAYSCALE
 
-        num_nodes = graph.G.number_of_nodes()
-        num_edges = graph.G.number_of_edges()
-        colors = []
-        widths = []
-        node_sizes = []
-        node_colors = []
+    num_nodes = graph.G.number_of_nodes()
+    num_edges = graph.G.number_of_edges()
+    colors = []
+    widths = []
+    node_sizes = []
+    node_colors = []
 
-        pos = {node: node for node in graph.G.nodes()}
+    pos = {node: node for node in graph.G.nodes()}
 
-        edges = sorted(graph.G.edges(data=True), reverse=True, key=lambda x: x[2]["weight"] / distance(x[0], x[1]))
+    edges = sorted(graph.G.edges(data=True), reverse=True, key=lambda x: x[2]["weight"] / distance(x[0], x[1]))
 
-        for u, v, data in edges:
-            distance_uv = distance(u, v)
-            avg_cost = data["weight"] / distance_uv
+    for u, v, data in edges:
+        distance_uv = distance(u, v)
+        avg_cost = data["weight"] / distance_uv
 
             for cost, color in edge_colors_map.items():
                 if avg_cost < cost + 0.2:
@@ -82,7 +84,7 @@ def plot(graph, show_cameras=False, grayscale=False):
                 colors.append(edge_colors_map[SLOW_ROAD_COST])
                 widths.append(EDGE_SIZES[SLOW_ROAD_COST])
 
-        nx.draw_networkx_edges(graph.G, pos, edgelist=edges, edge_color=colors, width=widths)
+    nx.draw_networkx_edges(graph.G, pos, edgelist=edges, edge_color=colors, width=widths)
 
         for node in graph.G.nodes():
             node_type = graph.poi.get(node)
@@ -109,8 +111,8 @@ def plot(graph, show_cameras=False, grayscale=False):
                 node_colors.append(edge_colors_map[SLOW_ROAD_COST])
 
 
-        nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
-        plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
+    nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
+    plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
 
         edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in edge_colors_map.items()}
         plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')

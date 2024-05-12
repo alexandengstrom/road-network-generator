@@ -3,10 +3,16 @@ import plotter
 import argparse
 from config import *
 from file_saver import save_to_file, save_to_json
+import logging
 
 def main(args):
+    if args.log:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+
     graph = RoadNetwork(args.width, args.height)
-    graph.generate(size=args.size, seed=args.seed, camery_density=args.camera_density, make_complex=args.complex, logging=args.log)
+    graph.generate(size=args.size, seed=args.seed, camery_density=args.camera_density, make_complex=args.complex)
 
     if args.plot:
         plotter.plot(graph, show_cameras=args.plot_cameras, grayscale=args.grayscale)

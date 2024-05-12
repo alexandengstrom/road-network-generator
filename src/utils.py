@@ -37,12 +37,13 @@ def create_circle_positions(center, radius, width, height, num_points):
     
     for i in range(num_points):
         angle = 2 * math.pi * i / num_points
+        random_factor = 6
         
         x = int(cx + radius * math.cos(angle))
         y = int(cy + radius * math.sin(angle))
 
-        x += random.randint(-radius // 11, radius // 11)
-        y += random.randint(-radius // 11, radius // 11)
+        x += random.randint(-radius // random_factor, radius // random_factor)
+        y += random.randint(-radius // random_factor, radius // random_factor)
         
         x = max(5, min(width-1, x))
         y = max(5, min(height-1, y))
@@ -93,22 +94,6 @@ def divide_into_squares(points, width, height, diameter):
         squares[min(row, diameter - 1)][min(col, diameter)].append((x, y))
     
     return squares
-
-
-# def find_closest_pair(first, second):
-#     from_point = None
-#     to_point = None
-#     min_distance = float("inf")
-
-#     for node in first:
-#         for conn_point in second:
-#             cur_distance = distance(conn_point, node)
-#             if cur_distance < min_distance:
-#                 from_point = node
-#                 to_point = conn_point
-#                 min_distance = cur_distance
-#     return from_point, to_point
-
 
 def find_closest_pair(first, second):
     first = np.array(first, dtype=float).reshape(-1, 2)
