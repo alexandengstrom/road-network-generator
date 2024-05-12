@@ -9,7 +9,7 @@ def main(args):
     graph.generate(size=args.size, seed=args.seed, camery_density=args.camera_density, make_complex=args.complex, logging=args.log)
 
     if args.plot:
-        plotter.plot(graph, show_cameras=args.plot_cameras)
+        plotter.plot(graph, show_cameras=args.plot_cameras, grayscale=args.grayscale)
 
     if args.file:
         if args.json:
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--camera_density", type=int, help="Decides how much cameras the road network will have", default=10)
     parser.add_argument("-p", "--plot", action='store_true', help="If set, the graph will be plotted")
     parser.add_argument("-C", "--plot_cameras", action='store_true', help="If set, cameras will be shown when plotting")
+    parser.add_argument("-g", "--grayscale", action='store_true', help="If set, the plot will be in grayscale")
     parser.add_argument("-f", "--file", action='store_true', help="If set, the graph will be saved to a file")
     parser.add_argument("-o", "--output", type=str, help="The name of the output file. This is used only if the -f flag is also used", default=None)
     parser.add_argument("-j", "--json", action='store_true', help="If set, the output file will be in JSON format. This is used only if -f flag is also used")
@@ -43,5 +44,8 @@ if __name__ == "__main__":
 
     if args.plot_cameras and not args.plot:
         parser.error("The -C/--plot_cameras argument requires the -p/--plot flag.")
+
+    if args.grayscale and not args.plot:
+        parser.error("The -g/--grayscale argument requires the -p/--plot flag.")
     
     main(args)
