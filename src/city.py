@@ -39,8 +39,7 @@ class BaseCity:
         self.connect_points_in_circle(points, cost, way_point_density)
 
     def generate_ring(self, points, cost):
-        ring_points, diagonal_points = self.connect_and_diagonalize(points, cost)
-        return ring_points, diagonal_points
+        return self.connect_and_diagonalize(points, cost)
     
     def generate_suburbs(self, size, radius, cost):
         positions = create_circle_positions(self.pos, radius, self.rn.width, self.rn.height, 20)
@@ -103,7 +102,7 @@ class Metropolis(BaseCity):
 
         if size > 7:
             town_offset = random.randint(10, 30)
-            num_towns = random.randint(5, 10)
+            num_towns = random.randint(3, 6)
             town_ring_positions = create_circle_positions(self.pos, ring_radius + town_offset, self.rn.width, self.rn.height, num_towns)
             for town_pos in town_ring_positions:
                 Town(town_pos, self.rn, size)

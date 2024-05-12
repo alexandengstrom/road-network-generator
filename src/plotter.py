@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 from utils import distance
 from config import *
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
+from error_handler import log
 
 EDGE_COLORS = {
     HIGHWAY_COST: 'black', 
@@ -37,61 +38,62 @@ NODE_SIZES = {
     HAMLET: 7,
     }
 
+@log
 def plot(graph, show_cameras=False):
-        num_nodes = graph.G.number_of_nodes()
-        num_edges = graph.G.number_of_edges()
-        colors = []
-        widths = []
-        node_sizes = []
-        node_colors = []
+    num_nodes = graph.G.number_of_nodes()
+    num_edges = graph.G.number_of_edges()
+    colors = []
+    widths = []
+    node_sizes = []
+    node_colors = []
 
-        pos = {node: node for node in graph.G.nodes()}
+    pos = {node: node for node in graph.G.nodes()}
 
-        edges = sorted(graph.G.edges(data=True), reverse=True, key=lambda x: x[2]["weight"] / distance(x[0], x[1]))
+    edges = sorted(graph.G.edges(data=True), reverse=True, key=lambda x: x[2]["weight"] / distance(x[0], x[1]))
 
-        for u, v, data in edges:
-            distance_uv = distance(u, v)
-            avg_cost = data["weight"] / distance_uv
+    for u, v, data in edges:
+        distance_uv = distance(u, v)
+        avg_cost = data["weight"] / distance_uv
 
-            for cost, color in EDGE_COLORS.items():
-                if avg_cost < cost + 0.2:
-                    colors.append(color)
-                    widths.append(EDGE_SIZES[cost])
-                    break
-            else:
-                colors.append(EDGE_COLORS[SLOW_ROAD_COST])
-                widths.append(EDGE_SIZES[SLOW_ROAD_COST])
+        for cost, color in EDGE_COLORS.items():
+            if avg_cost < cost + 0.2:
+                colors.append(color)
+                widths.append(EDGE_SIZES[cost])
+                break
+        else:
+            colors.append(EDGE_COLORS[SLOW_ROAD_COST])
+            widths.append(EDGE_SIZES[SLOW_ROAD_COST])
 
-        nx.draw_networkx_edges(graph.G, pos, edgelist=edges, edge_color=colors, width=widths)
+    nx.draw_networkx_edges(graph.G, pos, edgelist=edges, edge_color=colors, width=widths)
 
-        for node in graph.G.nodes():
-            node_type = graph.poi.get(node)
-            if node_type == Metropolis:
-                node_sizes.append(NODE_SIZES[METROPOLIS])
-                node_colors.append(NODE_COLORS[METROPOLIS])
-            elif node_type == UrbanCenter:
-                 node_sizes.append(NODE_SIZES[URBAN_AREA])
-                 node_colors.append(NODE_COLORS[URBAN_AREA])
-            elif node_type == Town:
-                 node_sizes.append(NODE_SIZES[TOWN])
-                 node_colors.append(NODE_COLORS[TOWN])
-            elif node_type == Village:
-                node_sizes.append(NODE_SIZES[VILLAGE])
-                node_colors.append(EDGE_COLORS[VILLAGE])
-            elif node_type == Hamlet:
-                node_sizes.append(NODE_SIZES[HAMLET])
-                node_colors.append(EDGE_COLORS[HAMLET])
-            elif show_cameras and node in graph.cameras:
-                 node_sizes.append(100)
-                 node_colors.append("#34b4eb")
-            else:
-                node_sizes.append(0)
-                node_colors.append(EDGE_COLORS[SLOW_ROAD_COST])
+    for node in graph.G.nodes():
+        node_type = graph.poi.get(node)
+        if node_type == Metropolis:
+            node_sizes.append(NODE_SIZES[METROPOLIS])
+            node_colors.append(NODE_COLORS[METROPOLIS])
+        elif node_type == UrbanCenter:
+                node_sizes.append(NODE_SIZES[URBAN_AREA])
+                node_colors.append(NODE_COLORS[URBAN_AREA])
+        elif node_type == Town:
+                node_sizes.append(NODE_SIZES[TOWN])
+                node_colors.append(NODE_COLORS[TOWN])
+        elif node_type == Village:
+            node_sizes.append(NODE_SIZES[VILLAGE])
+            node_colors.append(EDGE_COLORS[VILLAGE])
+        elif node_type == Hamlet:
+            node_sizes.append(NODE_SIZES[HAMLET])
+            node_colors.append(EDGE_COLORS[HAMLET])
+        elif show_cameras and node in graph.cameras:
+                node_sizes.append(100)
+                node_colors.append("#34b4eb")
+        else:
+            node_sizes.append(0)
+            node_colors.append(EDGE_COLORS[SLOW_ROAD_COST])
 
 
-        nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
-        plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
+    nx.draw_networkx_nodes(graph.G, pos, node_size=node_sizes, node_color=node_colors)
+    plt.title(f"Road Network with {num_nodes} nodes and {num_edges} edges")
 
-        edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in EDGE_COLORS.items()}
-        plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')
-        plt.show()
+    edge_labels = {color: mpatches.Patch(color=color, label=f"{round(120//cost)} km/h") for cost, color in EDGE_COLORS.items()}
+    plt.legend(handles=edge_labels.values(), title="Speed limits", loc='upper right')
+    plt.show()
