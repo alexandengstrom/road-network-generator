@@ -4,6 +4,8 @@ from utils import distance, correct_cost, interpolate_points, point_inside_circl
 from config import *
 import time
 from city import Metropolis, UrbanCenter, Town, Village, Hamlet
+import logging
+from error_handler import log
 
 city_connections = dict()
 
@@ -68,7 +70,11 @@ class RoadNetwork:
 
     def create_city_objects(self, Type, size, map_size):
         points = list()
-        positions = list()
+        grid = set()
+
+        grid_size = 80 - (size // 15)
+
+        removed = 0
 
         for _ in range(size):
             x = random.randint(0, self.width - 1)
@@ -76,21 +82,22 @@ class RoadNetwork:
             pos = (x, y)
             point = Type(pos, self, map_size)
 
-            too_close = False
-            for prev_pos in positions:
-                if distance(pos, prev_pos) < 50:
-                    too_close = True
-                    break
-            if too_close:
+            hashed_pos = (x // grid_size, y // grid_size)
+            if hashed_pos in grid:
+                removed += 1
                 continue
+            
+            grid.add(hashed_pos)
 
             points.append(point)
-            positions.append(pos)
             self.poi[point.pos] = Type
             self.add_points_of_interest(point.get_points_of_interest())
 
             city_connections[pos] = dict()
             city_connections[pos][pos] = True
+
+        if removed > size // 2:
+            logging.warning("City object had randomized position too close to each other, over half of them was removed")
 
         return points
     
@@ -103,13 +110,15 @@ class RoadNetwork:
         self.metropolitans = self.create_city_objects(Metropolis, num_big_cities, self.size)
         self.urban_centers = self.create_city_objects(UrbanCenter, num_big_cities, self.size)
         self.create_highway_system()
-        self.log("Generated highway system")
+        logging.info("Generated highway system")
 
-        for city in self.metropolitans + self.urban_centers:
+        big_cities = self.metropolitans + self.urban_centers
+
+        for city in big_cities:
             city.generate(self.size)
 
 
-        self.log("Generated big cities")
+        logging.info(f"Generated {len(big_cities)} big cities")
     
     def generate_towns(self):
         self.create_city_objects(Town, self.size * 8, self.size)
@@ -118,10 +127,7 @@ class RoadNetwork:
 
         self.connect_point_to_nearest_larger_point(main_cors, town_cors, MINOR_ROAD_COST, 20, 10)
 
-        if self.size > 13:
-            self.add_random_connections_between(main_cors, town_cors, 5, MAIN_ROAD_COST)
-
-        self.log("Generated towns")
+        logging.info(f"Generated {len(town_cors)} towns")
 
     def get_towns(self):
         towns = getattr(self, 'towns', [])
@@ -129,13 +135,12 @@ class RoadNetwork:
 
     def generate_villages(self):
         self.villages = list()
-        self.villages = self.create_city_objects(Village, self.size * 16, self.size)
+        self.villages = self.create_city_objects(Village, self.size * 10, self.size)
         village_cors = self.get_villages()
         main_cors = self.get_main_connections()
 
         self.connect_point_to_nearest_larger_point(main_cors, village_cors, MINOR_ROAD_COST, 20, 10)
-        self.add_random_connections(village_cors, RURAL_ROAD_COST, self.size, 40)
-        self.log("Generated villages")
+        logging.info(f"Generated {len(village_cors)} villages")
 
     def get_villages(self):
         villages = getattr(self, 'villages', [])
@@ -143,21 +148,21 @@ class RoadNetwork:
 
     def generate_hamlets(self):
         self.hamlets = list()
-        self.hamlets = self.create_city_objects(Hamlet, self.size * 64, self.size)
+        self.hamlets = self.create_city_objects(Hamlet, self.size * 50, self.size)
         hamlet_cors = self.get_hamlets()
         main_cors = self.get_main_connections()
         minor_cors = self.get_towns() + self.get_villages()
 
         self.connect_point_to_nearest_larger_point(main_cors, hamlet_cors, MINOR_ROAD_COST, 20, 10)
         self.connect_point_to_nearest_larger_point(minor_cors, hamlet_cors, RURAL_ROAD_COST, 20, 10)
-        self.log("Generated hamlets")
+        logging.info(f"Generated {len(hamlet_cors)} hamlets")
 
     def get_hamlets(self):
         hamlets = getattr(self, 'hamlets', [])
         return self.get_coordinates(hamlets)
-            
-    def generate(self, size=STANDARD_SIZE, seed=None, camery_density=5,  make_complex=False, logging=False):
-        self.logging = logging
+
+    @log    
+    def generate(self, size=STANDARD_SIZE, seed=None, camery_density=5,  make_complex=False):
         self.size = size
         self.make_complex = make_complex
         start_time = time.time()
@@ -180,11 +185,6 @@ class RoadNetwork:
         if size > 4:
             self.generate_hamlets()
 
-        if size > 15:
-            cors = self.get_main_connections() + self.get_towns()
-            self.add_random_connections(cors, MAIN_ROAD_COST, size, 20)
-            self.add_random_connections(cors, MINOR_ROAD_COST, size, 40)
-
         self.connect_squares()
 
         self.remove_redundant_nodes()
@@ -192,12 +192,10 @@ class RoadNetwork:
         self.remove_redundant_nodes()
 
         end_time = time.time()
-        self.display_graph_creation_info(end_time - start_time)
-        self.log(f"Use seed {self.seed} to recreate this graph")
+        time_elapsed = end_time - start_time
         
-
-    def display_graph_creation_info(self, time_elapsed):
-        self.log(f"Created graph with {self.G.number_of_nodes()} vertices and {self.G.number_of_edges()} edges in {round(time_elapsed, 2)} seconds")
+        logging.info(f"Created graph with {self.G.number_of_nodes()} vertices and {self.G.number_of_edges()} edges in {round(time_elapsed, 2)} seconds")
+        logging.info(f"Use seed {self.seed} to recreate this graph")
 
     def create_highway_system(self):
         cities_to_connect = self.metropolitans + self.urban_centers
@@ -313,6 +311,27 @@ class RoadNetwork:
                         city2 = find_closest(city1, squares[i + 1][j])
                         self.connect(city1, city2, SLOW_ROAD_COST)
 
+                if i < square_diameter - 1 and j < square_diameter - 1:
+                    if self.make_complex:
+                        city1, city2 = find_closest_pair(squares[i][j], squares[i + 1][j + 1])
+                        if city1 and city2:
+                            self.connect(city1, city2, SLOW_ROAD_COST)
+                    elif len(squares[i][j]) > 0 and len(squares[i + 1][j + 1]):
+                        city1 = random.choice(squares[i][j])
+                        city2 = find_closest(city1, squares[i + 1][j + 1])
+                        self.connect(city1, city2, SLOW_ROAD_COST)
+
+                if i < square_diameter - 1 and j > 0:
+                    if self.make_complex:
+                        city1, city2 = find_closest_pair(squares[i][j], squares[i + 1][j - 1])
+                        if city1 and city2:
+                            self.connect(city1, city2, SLOW_ROAD_COST)
+                    elif len(squares[i][j]) > 0 and len(squares[i + 1][j - 1]):
+                        city1 = random.choice(squares[i][j])
+                        city2 = find_closest(city1, squares[i + 1][j - 1])
+                        self.connect(city1, city2, SLOW_ROAD_COST)
+
+        logging.info(f"Created a {square_diameter}x{square_diameter} grid and connected all squares with their neighbours")
 
     
     def connect_with_closest_points(self, cities, cost):
@@ -333,14 +352,12 @@ class RoadNetwork:
         number_of_components = len(components)
         connected_components = 0
 
-        self.log(f"The graph is disconnected, starting to connect {len(components)} components...")
+        logging.info(f"The graph is disconnected, starting to connect {len(components)} components...")
         for component in components:
             component = list(component)
             if component is main_comp:
                 continue
             
-            # Its to expensive to calculate correct connections if there are many components
-            # We can afford to do it for the last 20 components
             if number_of_components - connected_components > 20 or not self.make_complex:
                 city1 = random.randint(0, len(main_comp) - 1)
                 city2 = random.randint(0, len(component) - 1)
@@ -350,12 +367,9 @@ class RoadNetwork:
                 self.connect(city1, city2, cost=cost)
 
             connected_components += 1
-            self.log(f"Connected components: {connected_components}/{number_of_components}")
+            logging.info(f"Connected components: {connected_components}/{number_of_components}")
 
     def make_highways_connected(self, layers, cost, strict=True):
-        # The time complexity of this function looks really bad but we will never have many nodes to work with here.
-        # This will create a main road network that makes sense.
-
         while not nx.is_connected(self.G):
             components = list(nx.connected_components(self.G))
             
@@ -365,18 +379,8 @@ class RoadNetwork:
             for nodes in nodes_to_connect:
                 if nodes is main_component:
                     continue
-
-                from_point = None
-                to_point = None
-                min_distance = float("inf")
                 
-                for node in nodes:
-                    for conn_point in main_component:
-                        cur_distance = distance(conn_point, node)
-                        if cur_distance < min_distance:
-                            from_point = node
-                            to_point = conn_point
-                            min_distance = cur_distance
+                from_point, to_point = find_closest_pair(nodes, main_component)
                 
                 if from_point and to_point:
                     self.highway_points += self.connect(from_point, to_point, cost, 20)
@@ -418,6 +422,7 @@ class RoadNetwork:
         return way_points
 
     def add_random_connections_between(self, first_points, second_points, connections, cost):
+        raise
         for _ in range(connections):
             city1 = random.choice(first_points)
             city2 = random.choice(second_points)
@@ -425,6 +430,7 @@ class RoadNetwork:
             self.connect_with_potential_stop(city1, city2, first_points, cost, 30, 30)
 
     def add_random_connections(self, points, cost, connections, precision=None):
+        raise
         for _ in range(connections):
             city1 = random.choice(points)
             city2 = random.choice(points)
@@ -457,11 +463,7 @@ class RoadNetwork:
                 self.G.remove_node(node)
 
         after = self.G.number_of_edges()
-        self.log(f"Removed {before - after} redundant nodes")
-
-    def log(self, message):
-        if self.logging:
-            print(message)
+        logging.info(f"Removed {before - after} redundant nodes")
 
     def __len__(self):
         return len(self.G.nodes())
