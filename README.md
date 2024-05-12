@@ -27,6 +27,7 @@ After installing the Road Network Generator, you can run it from anywhere in you
 | `-H, --height [int]`      | Sets the height of the graph, defining the maximum Y coordinate.                        | 800                    |
 | `-c, --camera_density [int]` | Determines the density of traffic cameras in the road network.                         | 10                     |
 | `-p, --plot`              | Plots the graph after generation.                                                       | Disabled               |
+| `-g, --grayscale`              | Plots the graph in grayscale, requires `-p`.                                                   | Disabled               |
 | `-C, --plot_cameras`      | If plotting is enabled, this flag will also display cameras on the plot.                | Disabled                    |
 | `-f, --file`              | Saves the generated graph to a file. Uses an own file format by default.                | Disabled        |
 | `-o, --output [file path]`| Specifies the output file name for saving the graph. Requires `-f`.                    | Auto-generated filename|
