@@ -27,12 +27,12 @@ After installing the Road Network Generator, you can run it from anywhere in you
 | `-H, --height [int]`      | Sets the height of the graph, defining the maximum Y coordinate.                        | 800                    |
 | `-c, --camera_density [int]` | Determines the density of traffic cameras in the road network.                         | 10                     |
 | `-p, --plot`              | Plots the graph after generation.                                                       | Disabled               |
-| `-C, --plot_cameras`      | If plotting is enabled, this flag will also display cameras on the plot.                | N/A                    |
+| `-C, --plot_cameras`      | If plotting is enabled, this flag will also display cameras on the plot.                | Disabled                    |
 | `-f, --file`              | Saves the generated graph to a file. Uses an own file format by default.                | Disabled        |
 | `-o, --output [file path]`| Specifies the output file name for saving the graph. Requires `-f`.                    | Auto-generated filename|
-| `-j, --json`              | Saves the output file in JSON format. Requires `-f`.                                    | N/A                    |
-| `-l, --log`               | Enables logging of messages during graph generation.                                    | N/A                    |
-| `-x, --complex`           | Generates a more complex and correct network at the expense of increased computational cost. | N/A              |
+| `-j, --json`              | Saves the output file in JSON format. Requires `-f`.                                    | Disabled                    |
+| `-l, --log`               | Enables logging of messages during graph generation.                                    | Disabled                    |
+| `-x, --complex`           | Generates a more complex and correct network at the expense of increased computational cost. | Disabled              |
 ### Example:
 Creates a graph with the dimensions 2000x1000 and saves it in JSON-format to my_graph.json. It will also plot the graph visually.
 ```
@@ -78,9 +78,14 @@ The figure and table below shows how the number of nodes and edges grows as the 
 | 25   | 213142 | 408277 |
 
 ## Visual examples
-![Screenshot from 2024-05-10 17-09-17](https://github.com/alexandengstrom/road-network-generator/assets/123507241/d8fbbce8-b12f-42a1-956a-80963ac56047)
-![Screenshot from 2024-05-10 17-10-14](https://github.com/alexandengstrom/road-network-generator/assets/123507241/24d1688f-1824-42fa-997f-993905c66b67)
-![Screenshot from 2024-05-10 17-11-37](https://github.com/alexandengstrom/road-network-generator/assets/123507241/02e89d19-1875-4f5d-bb81-3a3f5bfd95c9)
+
+Graph generated with command `rd-gen -p -x -s 2`:
+![Screenshot from 2024-05-12 14-20-29](https://github.com/alexandengstrom/road-network-generator/assets/123507241/e429ae5b-46d1-4e15-8438-9f4e60da13b3)
+Graph generated with command `rd-gen -p -x -s 13`:
+![Screenshot from 2024-05-12 14-21-24](https://github.com/alexandengstrom/road-network-generator/assets/123507241/858740fe-fd36-4d31-9d4c-36bb487ccff1)
+Graph generated with command `rd-gen -p -x -s 30`:
+![Screenshot from 2024-05-12 14-23-09](https://github.com/alexandengstrom/road-network-generator/assets/123507241/aa8756ae-596f-44be-9935-2d79f9a1cf62)
+
 
 
 ## Contributing
