@@ -16,4 +16,4 @@ if [[ ":$PATH:" != *":$PROJECT_DIR:"* ]]; then
     echo "export PATH=\"\$PATH:$PROJECT_DIR\"" >> ~/.bashrc
 fi
 
-echo "Road Network Generator was installed successfully."
+source ~/.bashrc
